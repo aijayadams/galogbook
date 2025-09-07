@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CloudArrowUpIcon, DocumentIcon, ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Flight } from '@/types/flight';
+import { useRouter } from 'next/navigation';
 
 interface FileUploadState {
   jpiFile: File | null;
@@ -83,6 +84,7 @@ const generateMockFlights = (): Flight[] => [
 ];
 
 export default function NewTripPage() {
+  const router = useRouter();
   const [uploadState, setUploadState] = useState<FileUploadState>({
     jpiFile: null,
     fuelInvoiceFile: null,
@@ -93,6 +95,7 @@ export default function NewTripPage() {
   const [selectedFlights, setSelectedFlights] = useState<Set<string>>(new Set());
   const [fuelData, setFuelData] = useState<FuelData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
 
   // Handle file uploads
   const handleDragOver = useCallback((e: React.DragEvent, type: 'jpi' | 'fuel') => {
@@ -119,8 +122,9 @@ export default function NewTripPage() {
       
       if (type === 'jpi') {
         // Mock JPI processing - generate flights
-        setFlights(generateMockFlights());
-        setSelectedFlights(new Set(generateMockFlights().map(f => f.uuid)));
+        const mockFlights = generateMockFlights();
+        setFlights(mockFlights);
+        setSelectedFlights(new Set()); // Start with nothing selected
       } else if (type === 'fuel') {
         // Process fuel invoice via API
         try {
@@ -160,8 +164,9 @@ export default function NewTripPage() {
       
       if (type === 'jpi') {
         // Mock JPI processing - generate flights
-        setFlights(generateMockFlights());
-        setSelectedFlights(new Set(generateMockFlights().map(f => f.uuid)));
+        const mockFlights = generateMockFlights();
+        setFlights(mockFlights);
+        setSelectedFlights(new Set()); // Start with nothing selected
       } else if (type === 'fuel') {
         // Process fuel invoice via API
         try {
@@ -241,6 +246,51 @@ export default function NewTripPage() {
     });
   }, [flights, selectedFlights, fuelData]);
 
+  // Create trip function
+  const createTrip = useCallback(async () => {
+    if (selectedFlights.size === 0) {
+      alert('Please select at least one flight');
+      return;
+    }
+
+    try {
+      setIsCreatingTrip(true);
+      
+      const selectedFlightsList = flightsWithFuelCosts.filter(f => selectedFlights.has(f.uuid));
+      
+      const formData = new FormData();
+      formData.append('flights', JSON.stringify(selectedFlightsList));
+      
+      if (uploadState.jpiFile) {
+        formData.append('jpiFile', uploadState.jpiFile);
+      }
+      
+      if (uploadState.fuelInvoiceFile) {
+        formData.append('fuelFile', uploadState.fuelInvoiceFile);
+      }
+      
+      const response = await fetch('/api/create-trip', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create trip');
+      }
+      
+      const result = await response.json();
+      
+      // Success! Navigate back to the list page
+      router.push('/list');
+      
+    } catch (error) {
+      console.error('Error creating trip:', error);
+      alert('Error creating trip. Please try again.');
+    } finally {
+      setIsCreatingTrip(false);
+    }
+  }, [selectedFlights, flightsWithFuelCosts, uploadState.jpiFile, uploadState.fuelInvoiceFile, router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
@@ -308,7 +358,7 @@ export default function NewTripPage() {
                       Click to upload or drag JPI file here
                     </p>
                     <p className="text-xs text-gray-500">
-                      PDF, TXT, or CSV files
+                      JPI files only
                     </p>
                   </div>
                 </div>
@@ -491,15 +541,18 @@ export default function NewTripPage() {
         {flights.length > 0 && selectedFlights.size > 0 && (
           <div className="text-center">
             <button
-              className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg transition-colors shadow-lg"
-              onClick={() => {
-                // TODO: Create trip with selected flights
-                console.log('Creating trip with flights:', 
-                  flightsWithFuelCosts.filter(f => selectedFlights.has(f.uuid))
-                );
-              }}
+              className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={createTrip}
+              disabled={isCreatingTrip}
             >
-              Create Trip with {selectedFlights.size} Flight{selectedFlights.size !== 1 ? 's' : ''}
+              {isCreatingTrip ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Creating Trip...</span>
+                </div>
+              ) : (
+                `Create Trip with ${selectedFlights.size} Flight${selectedFlights.size !== 1 ? 's' : ''}`
+              )}
             </button>
           </div>
         )}
