@@ -1,4 +1,18 @@
+import fs from "fs";
+import path from "path";
+
+const dataFile = path.join(process.cwd(), "data", "flights.json");
+
+export interface Trip {
+  uuid: string;
+  flights: Flight[];  
+  // A JPL file
+  jplFlights: number[];
+}
+
 export interface Flight {
+  uuid: string;
+
   date: string; // e.g. "2021-06-10"
   page: number;
 
@@ -49,10 +63,22 @@ export interface Flight {
   approach?: Approach[]; // e.g. "ILS, VOR, GPS"
   remarks?: string;
 }
-
 export interface Approach {
   airport: string;
   aproachType: string;
   runway: string;
   remarks?: string;
+}
+
+export function FlightsFromDisk(): Trip[] {
+  if (!fs.existsSync(dataFile)) {
+    return [];
+  }
+  const raw = fs.readFileSync(dataFile, "utf-8");
+  return JSON.parse(raw) as Trip[];
+}
+
+export function FlightsToDisk(trips: Trip[]): void {
+  const json = JSON.stringify(trips, null, 2);
+  fs.writeFileSync(dataFile, json, "utf-8");
 }

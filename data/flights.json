@@ -1,0 +1,104 @@
+[
+  {
+    "uuid": "92e618ff-c4f4-4151-982d-e7b665a18e1f",
+    "flights": [
+      {
+        "date": "2024-01-15",
+        "page": 1,
+        "category": "ASEL",
+        "takeoffsDay": 1,
+        "landingDay": 1,
+        "landingDayFullStop": 1,
+        "dayVfr": 1.5,
+        "pilotInCommand": 1.5,
+        "tachTime": 1.5,
+        "wallTime": 1.5,
+        "timeOff": "14:30",
+        "timeIn": "16:00",
+        "tachOff": 123.4,
+        "tachIn": 124.9,
+        "fuelSupplied": 25.0,
+        "fuelUsed": 12.5,
+        "fuelCost": 75.0,
+        "from": "KJFK",
+        "to": "KLGA",
+        "route": ["KJFK", "KLGA"],
+        "approach": [
+          {
+            "airport": "KLGA",
+            "aproachType": "ILS",
+            "runway": "04",
+            "remarks": "Good approach"
+          }
+        ],
+        "remarks": "Training flight - pattern work"
+      },
+      {
+        "uuid": "a5315f8f-bedd-4d8d-8b96-7cdb54de033d",
+        "date": "2024-01-20",
+        "page": 1,
+        "category": "ASEL",
+        "takeoffsDay": 3,
+        "takeoffsNight": 2,
+        "landingDay": 3,
+        "landingDayFullStop": 3,
+        "landingNight": 2,
+        "landingNightFullStop": 2,
+        "dayVfr": 1.2,
+        "nightVfr": 0.8,
+        "dualReceived": 2.0,
+        "tachTime": 2.0,
+        "wallTime": 2.0,
+        "timeOff": "18:00",
+        "timeIn": "20:00",
+        "tachOff": 124.9,
+        "tachIn": 126.9,
+        "fuelSupplied": 30.0,
+        "fuelUsed": 18.0,
+        "fuelCost": 90.0,
+        "from": "KLGA",
+        "to": "KLGA",
+        "route": ["KLGA"],
+        "remarks": "Night currency training"
+      }
+    ]
+  },
+  {
+    "uuid": "abcd",
+    "flights": [
+      {
+        "date": "2024-02-01",
+        "page": 2,
+        "category": "AMEL",
+        "takeoffsDay": 1,
+        "landingDay": 1,
+        "landingDayFullStop": 1,
+        "dayVfr": 2.5,
+        "dayCrossCountry": 2.5,
+        "pilotInCommand": 2.5,
+        "pilotInCommandCrossCountry": 2.5,
+        "tachTime": 2.5,
+        "wallTime": 2.5,
+        "timeOff": "09:00",
+        "timeIn": "11:30",
+        "tachOff": 456.7,
+        "tachIn": 459.2,
+        "fuelSupplied": 45.0,
+        "fuelUsed": 28.0,
+        "fuelCost": 140.0,
+        "from": "KJFK",
+        "to": "KBOS",
+        "route": ["KJFK", "KBOS"],
+        "approach": [
+          {
+            "airport": "KBOS",
+            "aproachType": "GPS",
+            "runway": "09",
+            "remarks": "Clear weather"
+          }
+        ],
+        "remarks": "Cross country flight to Boston"
+      }
+    ]
+  }
+]

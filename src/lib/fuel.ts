@@ -1,9 +1,7 @@
-import fs from "fs";
 import { PdfReader } from "pdfreader";
 
-export async function extractInvoiceData() {
-    // TODO:  Change me
-  const dataBuffer = fs.readFileSync("./Invoice_09012025.pdf");
+export async function extractInvoiceData(fileBuffer: ArrayBuffer) {
+  const dataBuffer = Buffer.from(fileBuffer);
 
   const results: string[] = await new Promise((resolve, reject) => {
     const texts: string[] = [];
