@@ -3,33 +3,56 @@ export interface Flight {
   page: number;
 
   // Flight times
-  asel?: number;
-  sim?: number;
+  category: string; // e.g. "ASEL, AMEL, ASES, AMES, glider, balloon, AAED, BATD"
+  // Take off and Landing
+  takeoffsDay?: number;
+  takeoffsNight?: number;
   landingDay?: number;
+  landingDayFullStop?: number;
   landingNight?: number;
-  hood?: number;
-  imc?: number;
-  xc?: number;
-  dual?: number;
-  night?: number;
-  pic?: number;
-  picXc?: number;
+  landingNightFullStop?: number;
 
-  // Aircraft-specific
-  ownedTach?: number;
-  ownedHobb?: number;
+  // Condition of flight
+  dayVfr?: number;
+  nightVfr?: number;
+  daySimulatedImc?: number;
+  nightSimulatedImc?: number;
+  dayActualImc?: number;
+  nightActualImc?: number;
+  dayCrossCountry?: number;
+  nightCrossCountry?: number;
+  dualReceived?: number;
+  dualGiven?: number;
+  pilotInCommand?: number;
+  pilotInCommandCrossCountry?: number;
 
-  // Fuel + costs
-  month: string; // e.g. "2021/06"
-  fuelGal?: number;
-  fuelDollars?: number;
+  // Times
+  tachTime?: number;
+  wallTime?: number;
+  timeOff?: string; // e.g. "14:30"
+  timeIn?: string; // e.g. "15:45"
+  tachOff?: number;
+  tachIn?: number;
+  hobbOff?: number;
+  hobbIn?: number;
 
-  tachStart?: number;
-  tachStop?: number;
-  hobbStart?: number;
-  hobbStop?: number;
+  // Fuel
+  fuelSupplied?: number;
+  fuelUsed?: number;
+  fuelCost?: number;
 
-  fuelUsd?: number;
 
-  notes?: string;
+  // Route of flight
+  from?: string;
+  to?: string;
+  route?: string[]; // e.g. "KJFK", "KLAX"
+  approach?: Approach[]; // e.g. "ILS, VOR, GPS"
+  remarks?: string;
+}
+
+export interface Approach {
+  airport: string;
+  aproachType: string;
+  runway: string;
+  remarks?: string;
 }
