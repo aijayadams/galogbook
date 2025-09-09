@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { CloudArrowUpIcon, DocumentIcon, ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { Flight } from '@/types/flight';
 import { useRouter } from 'next/navigation';
 
@@ -16,72 +16,7 @@ interface FuelData {
   fuelGal: number;
 }
 
-// Mock flight data - replace with actual JPI parsing later
-const generateMockFlights = (): Flight[] => [
-  {
-    uuid: crypto.randomUUID(),
-    date: '2024-12-20',
-    page: 1,
-    category: 'ASEL',
-    takeoffsDay: 1,
-    landingDay: 1,
-    landingDayFullStop: 1,
-    dayVfr: 1.2,
-    pilotInCommand: 1.2,
-    tachTime: 1.2,
-    wallTime: 1.2,
-    timeOff: '09:00',
-    timeIn: '10:12',
-    tachOff: 456.7,
-    tachIn: 457.9,
-    from: 'KJFK',
-    to: 'KLGA',
-    route: ['KJFK', 'KLGA'],
-    remarks: 'Training flight - pattern work'
-  },
-  {
-    uuid: crypto.randomUUID(),
-    date: '2024-12-20',
-    page: 1,
-    category: 'ASEL',
-    takeoffsDay: 2,
-    landingDay: 2,
-    landingDayFullStop: 2,
-    dayVfr: 0.8,
-    pilotInCommand: 0.8,
-    tachTime: 0.8,
-    wallTime: 0.8,
-    timeOff: '11:00',
-    timeIn: '11:48',
-    tachOff: 457.9,
-    tachIn: 458.7,
-    from: 'KLGA',
-    to: 'KBOS',
-    route: ['KLGA', 'KBOS'],
-    remarks: 'Cross country to Boston'
-  },
-  {
-    uuid: crypto.randomUUID(),
-    date: '2024-12-20',
-    page: 1,
-    category: 'ASEL',
-    takeoffsDay: 1,
-    landingDay: 1,
-    landingDayFullStop: 1,
-    dayVfr: 1.5,
-    pilotInCommand: 1.5,
-    tachTime: 1.5,
-    wallTime: 1.5,
-    timeOff: '14:30',
-    timeIn: '16:00',
-    tachOff: 458.7,
-    tachIn: 460.2,
-    from: 'KBOS',
-    to: 'KJFK',
-    route: ['KBOS', 'KJFK'],
-    remarks: 'Return flight to JFK'
-  }
-];
+// JPI parsing now handled via /api/list-jpi
 
 export default function NewTripPage() {
   const router = useRouter();
@@ -121,10 +56,31 @@ export default function NewTripPage() {
       }));
       
       if (type === 'jpi') {
-        // Mock JPI processing - generate flights
-        const mockFlights = generateMockFlights();
-        setFlights(mockFlights);
-        setSelectedFlights(new Set()); // Start with nothing selected
+        try {
+          setIsProcessing(true);
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
+          if (!res.ok) throw new Error('Failed to parse JPI file');
+          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string }[] };
+          const mapped: Flight[] = (data.flights || []).map((f) => ({
+            uuid: String(f.id),
+            date: f.date,
+            page: f.index,
+            category: 'ASEL',
+            tachTime: f.tachDuration ?? f.hobbDuration ?? 0,
+            wallTime: f.hobbDuration ?? undefined,
+            timeOff: f.timeOff,
+            timeIn: f.timeIn,
+          }));
+          setFlights(mapped);
+          setSelectedFlights(new Set());
+        } catch (err) {
+          console.error(err);
+          alert('Could not read JPI file. See console for details.');
+        } finally {
+          setIsProcessing(false);
+        }
       } else if (type === 'fuel') {
         // Process fuel invoice via API
         try {
@@ -163,10 +119,31 @@ export default function NewTripPage() {
       }));
       
       if (type === 'jpi') {
-        // Mock JPI processing - generate flights
-        const mockFlights = generateMockFlights();
-        setFlights(mockFlights);
-        setSelectedFlights(new Set()); // Start with nothing selected
+        try {
+          setIsProcessing(true);
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
+          if (!res.ok) throw new Error('Failed to parse JPI file');
+          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string }[] };
+          const mapped: Flight[] = (data.flights || []).map((f) => ({
+            uuid: String(f.id),
+            date: f.date,
+            page: f.index,
+            category: 'ASEL',
+            tachTime: f.tachDuration ?? f.hobbDuration ?? 0,
+            wallTime: f.hobbDuration ?? undefined,
+            timeOff: f.timeOff,
+            timeIn: f.timeIn,
+          }));
+          setFlights(mapped);
+          setSelectedFlights(new Set());
+        } catch (err) {
+          console.error(err);
+          alert('Could not read JPI file. See console for details.');
+        } finally {
+          setIsProcessing(false);
+        }
       } else if (type === 'fuel') {
         // Process fuel invoice via API
         try {
@@ -278,7 +255,7 @@ export default function NewTripPage() {
         throw new Error('Failed to create trip');
       }
       
-      const result = await response.json();
+      await response.json();
       
       // Success! Navigate back to the list page
       router.push('/list');
@@ -330,7 +307,7 @@ export default function NewTripPage() {
                 type="file"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={(e) => handleFileSelect(e, 'jpi')}
-                accept=".pdf,.txt,.csv"
+                accept=".JPI,.jpi"
               />
               
               {uploadState.jpiFile ? (

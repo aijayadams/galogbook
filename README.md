@@ -46,3 +46,25 @@ npm run cli -- hello Scott
 # Extract fuel data from a PDF invoice
 npm run cli -- run ./data/Invoice_09012025.pdf
 ```
+
+## JPI File Parsing (decodejpi)
+
+The JPI parser (`decodejpi`) is listed as a dependency and is built automatically after `npm install`.
+
+If you ever need to rebuild it manually:
+
+```bash
+(cd node_modules/decodejpi && npm run build)
+```
+
+Use the app: upload a JPI file on the New Trip page, or POST to the API:
+
+```bash
+curl -X POST http://localhost:3000/api/create-trip \
+  -F "jpiFile=@/absolute/path/to/U250901.JPI" \
+  -F 'flights='
+```
+
+Notes:
+- The app dynamically loads `decodejpi`. If the lib is unavailable, JPI endpoints return a helpful error.
+- When a JPI file is provided and no `flights` JSON is sent, the trip’s flights are derived from the JPI file (default category `ASEL`).
