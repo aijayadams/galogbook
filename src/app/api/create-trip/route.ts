@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
     
     const newTrip: Trip = {
       uuid: tripId,
-      flights: flights
+      flights: flights,
+      jplFlights: []
     };
     
     const updatedTrips = [...existingTrips, newTrip];

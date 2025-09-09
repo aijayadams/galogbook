@@ -1,11 +1,13 @@
 #!/usr/bin/env ts-node
 
 import { Command } from "commander";
+import fs from "fs";
 import { extractInvoiceData } from "@/lib/fuel";
 
-async function main() {
-  // Get the 
-  let result = await extractInvoiceData();
+async function main(pdfPath: string) {
+  const buf = fs.readFileSync(pdfPath);
+  const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  const result = await extractInvoiceData(arrayBuffer);
   console.log(result);
 }
 
@@ -25,10 +27,12 @@ program
     console.log(`Hello, ${name}!`);
   });
 
-  program
-    .command("run")
-    .action(async () => {
-      await main();
-    });
+program
+  .command("run")
+  .description("Extract fuel data from a PDF invoice")
+  .argument("<pdfPath>", "Path to a PDF invoice")
+  .action(async (pdfPath: string) => {
+    await main(pdfPath);
+  });
 
 program.parse(process.argv);
