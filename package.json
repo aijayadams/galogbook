@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "cli": "tsx src/scripts/my-cli.ts",
+    "airports:convert": "tsx scripts/convert-airports.ts",
     "postinstall": "node scripts/postinstall-decodejpi.js"
   },
   "dependencies": {

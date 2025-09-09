@@ -68,3 +68,30 @@ curl -X POST http://localhost:3000/api/create-trip \
 Notes:
 - The app dynamically loads `decodejpi`. If the lib is unavailable, JPI endpoints return a helpful error.
 - When a JPI file is provided and no `flights` JSON is sent, the trip’s flights are derived from the JPI file (default category `ASEL`).
+
+## Airports Dataset (From/To inference)
+
+This app can infer From/To by matching JPI start/end coordinates to the nearest airport.
+
+- Default dataset: embedded JSON at `src/lib/airports.json` (committed).
+- Comprehensive dataset override: place a JSON file at `data/airports.json` (git‑ignored) or set `AIRPORTS_JSON_PATH` to an absolute path. Structure:
+
+```json
+[
+  { "icao": "KSFO", "iata": "SFO", "name": "San Francisco Intl", "lat": 37.6213, "lng": -122.379 },
+  { "icao": "KHWD", "iata": "HWD", "name": "Hayward Executive", "lat": 37.659, "lng": -122.122 }
+]
+```
+
+Tips:
+- Convert datasets such as OurAirports/OpenFlights to this JSON shape:
+
+```bash
+# OurAirports airports.csv -> src/lib/airports.json
+npm run airports:convert -- ./airports.csv
+
+# Or specify a different destination
+npm run airports:convert -- ./airports.csv ./data/airports.json
+```
+  - Accepts CSV (with headers) or JSON. Tries to read `ident`/`iata_code`/`name`/`latitude_deg`/`longitude_deg` fields.
+- Matching uses a 10 km cutoff; if no airport is within 10 km, From/To remains blank.

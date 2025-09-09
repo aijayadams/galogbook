@@ -62,7 +62,7 @@ export default function NewTripPage() {
           formData.append('file', file);
           const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
           if (!res.ok) throw new Error('Failed to parse JPI file');
-          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string }[] };
+          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string; from?: string; to?: string }[] };
           const mapped: Flight[] = (data.flights || []).map((f) => ({
             uuid: String(f.id),
             date: f.date,
@@ -72,6 +72,8 @@ export default function NewTripPage() {
             wallTime: f.hobbDuration ?? undefined,
             timeOff: f.timeOff,
             timeIn: f.timeIn,
+            from: f.from,
+            to: f.to,
           }));
           setFlights(mapped);
           setSelectedFlights(new Set());
@@ -125,7 +127,7 @@ export default function NewTripPage() {
           formData.append('file', file);
           const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
           if (!res.ok) throw new Error('Failed to parse JPI file');
-          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string }[] };
+          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string; from?: string; to?: string }[] };
           const mapped: Flight[] = (data.flights || []).map((f) => ({
             uuid: String(f.id),
             date: f.date,
@@ -135,6 +137,8 @@ export default function NewTripPage() {
             wallTime: f.hobbDuration ?? undefined,
             timeOff: f.timeOff,
             timeIn: f.timeIn,
+            from: f.from,
+            to: f.to,
           }));
           setFlights(mapped);
           setSelectedFlights(new Set());

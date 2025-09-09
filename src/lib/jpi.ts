@@ -63,6 +63,10 @@ export type JpiFlightSummary = {
   timeIn?: string;  // HH:mm:ss
   tachDuration?: number;
   hobbDuration?: number;
+  startLat?: string;
+  startLng?: string;
+  endLat?: string;
+  endLng?: string;
 };
 
 export async function summarizeFlightsFromJpi(ab: ArrayBuffer): Promise<JpiFlightSummary[]> {
