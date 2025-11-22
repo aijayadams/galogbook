@@ -1,19 +1,123 @@
 'use client';
 
 import { Flight } from '@/types/flight';
+import type { FlightSample } from '@/lib/jpiFlightData';
 import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import Map, { Layer, Source } from 'react-map-gl';
+import type { LayerProps } from 'react-map-gl';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 interface FlightViewProps {
   tripId: string;
   flight: Flight;
   prevFlightId: string | null;
   nextFlightId: string | null;
+  samples: FlightSample[];
 }
 
-export default function FlightView({ tripId, flight, prevFlightId, nextFlightId }: FlightViewProps) {
+export default function FlightView({ tripId, flight, prevFlightId, nextFlightId, samples }: FlightViewProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const coords = useMemo(
+    () => samples.filter((s) => s.lat !== undefined && s.lng !== undefined),
+    [samples]
+  );
+
+  const mapCenter = useMemo(() => {
+    if (coords.length === 0) return null;
+    const latAvg = coords.reduce((sum, s) => sum + (s.lat ?? 0), 0) / coords.length;
+    const lngAvg = coords.reduce((sum, s) => sum + (s.lng ?? 0), 0) / coords.length;
+    return { latitude: latAvg, longitude: lngAvg };
+  }, [coords]);
+
+  const lineGeoJson = useMemo(() => {
+    if (coords.length < 2) return null;
+    return {
+      type: 'Feature' as const,
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: coords.map((s) => [s.lng!, s.lat!]),
+      },
+      properties: {},
+    };
+  }, [coords]);
+
+  const lineLayer: LayerProps = {
+    id: 'flight-path',
+    type: 'line',
+    paint: {
+      'line-color': '#2563eb',
+      'line-width': 3,
+    },
+  };
+
+  const altitudeSamples = useMemo(
+    () => samples.filter((s) => typeof s.altitude === 'number'),
+    [samples]
+  );
+
+  const altitudeData = useMemo(() => {
+    if (altitudeSamples.length === 0) return null;
+    const labels = altitudeSamples.map((s) => s.time || String(s.index));
+    const data = altitudeSamples.map((s) => s.altitude ?? 0);
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Altitude',
+          data,
+          borderColor: 'rgb(37, 99, 235)',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          tension: 0.2,
+          pointRadius: 0,
+        },
+      ],
+    };
+  }, [altitudeSamples]);
+
+  const altitudeOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          mode: 'index' as const,
+          intersect: false,
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxTicksLimit: 6,
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Altitude',
+          },
+        },
+      },
+    }),
+    []
+  );
 
   return (
     <div className="container mx-auto p-6">
@@ -200,9 +304,43 @@ export default function FlightView({ tripId, flight, prevFlightId, nextFlightId 
         )}
       </div>
 
-      {/* Space for graphs and visualizations */}
-      <div className="text-gray-400 text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-        <p>Space reserved for graphs and visualizations</p>
+      {/* Graphs and visualizations */}
+      <div className="grid grid-cols-1 gap-6 mt-8">
+        {/* Mapbox flight path */}
+        <div className="h-80 bg-gray-100 border rounded-lg overflow-hidden">
+          {process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN && mapCenter && lineGeoJson ? (
+            <Map
+              mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+              initialViewState={{
+                longitude: mapCenter.longitude,
+                latitude: mapCenter.latitude,
+                zoom: 8,
+              }}
+              mapStyle="mapbox://styles/mapbox/streets-v11"
+              style={{ width: '100%', height: '100%' }}
+            >
+              <Source id="flight-path-source" type="geojson" data={lineGeoJson}>
+                <Layer {...lineLayer} />
+              </Source>
+            </Map>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm px-4 text-center">
+              {coords.length === 0
+                ? 'No GPS points available from JPI for this flight.'
+                : 'Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to see the Mapbox route.'}
+            </div>
+          )}
+        </div>
+
+        {/* Altitude chart */}
+        <div className="bg-white border rounded-lg p-4 h-64">
+          <h2 className="text-lg font-semibold mb-2">Altitude Profile</h2>
+          {altitudeData ? (
+            <Line data={altitudeData} options={altitudeOptions} />
+          ) : (
+            <p className="text-sm text-gray-500">No altitude data available from JPI for this flight.</p>
+          )}
+        </div>
       </div>
     </div>
   );

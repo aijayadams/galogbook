@@ -1,4 +1,5 @@
 import { FlightsFromDisk } from '@/types/flight';
+import { loadJpiSamplesForFlight } from '@/lib/jpiFlightData';
 import { notFound } from 'next/navigation';
 import FlightView from './FlightView';
 
@@ -32,12 +33,16 @@ export default async function ViewFlightPage({ params }: ViewFlightPageProps) {
   const prevFlightId = flightIndex > 0 ? trip.flights[flightIndex - 1].uuid : null;
   const nextFlightId = flightIndex < trip.flights.length - 1 ? trip.flights[flightIndex + 1].uuid : null;
 
+  const jpiFlightNumber = trip.jplFlights[flightIndex] ?? (typeof flight.jpiFlightNumber === 'number' ? flight.jpiFlightNumber : undefined);
+  const samples = jpiFlightNumber ? loadJpiSamplesForFlight(tripId, jpiFlightNumber) : [];
+
   return (
     <FlightView
       tripId={tripId}
       flight={flight}
       prevFlightId={prevFlightId}
       nextFlightId={nextFlightId}
+      samples={samples}
     />
   );
 }
