@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Flight } from '@/types/flight';
 import { useRouter } from 'next/navigation';
 import AirportAutocomplete from '@/components/AirportAutocomplete';
+import FlightEditModal from '@/components/FlightEditModal';
 import airportsData from '@/lib/airports.json';
 
 interface FileUploadState {
@@ -33,6 +34,8 @@ export default function NewTripPage() {
   const [fuelData, setFuelData] = useState<FuelData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [editingField, setEditingField] = useState<{ flightId: string; field: 'from' | 'to' } | null>(null);
+  const [editingFlight, setEditingFlight] = useState<Flight | null>(null);
 
   // Normalize airports data for autocomplete
   const airports = useMemo(() => {
@@ -196,6 +199,13 @@ export default function NewTripPage() {
   const updateFlightField = useCallback((flightId: string, field: keyof Flight, value: string) => {
     setFlights(prev => prev.map(f =>
       f.uuid === flightId ? { ...f, [field]: value } : f
+    ));
+  }, []);
+
+  // Handle saving edited flight
+  const handleSaveFlight = useCallback((editedFlight: Flight) => {
+    setFlights(prev => prev.map(f =>
+      f.uuid === editedFlight.uuid ? editedFlight : f
     ));
   }, []);
 
@@ -472,6 +482,7 @@ export default function NewTripPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel Used</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel Cost</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -490,22 +501,44 @@ export default function NewTripPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.date}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <AirportAutocomplete
-                          value={flight.from || ''}
-                          onChange={(value) => updateFlightField(flight.uuid, 'from', value)}
-                          airports={airports}
-                          placeholder="From"
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        {editingField?.flightId === flight.uuid && editingField?.field === 'from' ? (
+                          <AirportAutocomplete
+                            value={flight.from || ''}
+                            onChange={(value) => updateFlightField(flight.uuid, 'from', value)}
+                            airports={airports}
+                            placeholder="From"
+                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onBlur={() => setEditingField(null)}
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            onClick={() => setEditingField({ flightId: flight.uuid, field: 'from' })}
+                            className="w-20 px-2 py-1 text-left hover:bg-gray-100 rounded transition-colors"
+                          >
+                            {flight.from || '-'}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <AirportAutocomplete
-                          value={flight.to || ''}
-                          onChange={(value) => updateFlightField(flight.uuid, 'to', value)}
-                          airports={airports}
-                          placeholder="To"
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        {editingField?.flightId === flight.uuid && editingField?.field === 'to' ? (
+                          <AirportAutocomplete
+                            value={flight.to || ''}
+                            onChange={(value) => updateFlightField(flight.uuid, 'to', value)}
+                            airports={airports}
+                            placeholder="To"
+                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onBlur={() => setEditingField(null)}
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            onClick={() => setEditingField({ flightId: flight.uuid, field: 'to' })}
+                            className="w-20 px-2 py-1 text-left hover:bg-gray-100 rounded transition-colors"
+                          >
+                            {flight.to || '-'}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.timeOff || '-'}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.timeIn || '-'}</td>
@@ -518,6 +551,15 @@ export default function NewTripPage() {
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>
                         {flight.remarks || '-'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => setEditingFlight(flight)}
+                          className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                          <span>Edit</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -575,6 +617,16 @@ export default function NewTripPage() {
               )}
             </button>
           </div>
+        )}
+
+        {/* Flight Edit Modal */}
+        {editingFlight && (
+          <FlightEditModal
+            flight={editingFlight}
+            airports={airports}
+            onSave={handleSaveFlight}
+            onClose={() => setEditingFlight(null)}
+          />
         )}
       </div>
     </div>

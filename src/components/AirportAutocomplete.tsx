@@ -16,6 +16,8 @@ interface AirportAutocompleteProps {
   airports: Airport[];
   placeholder?: string;
   className?: string;
+  onBlur?: () => void;
+  autoFocus?: boolean;
 }
 
 export default function AirportAutocomplete({
@@ -23,7 +25,9 @@ export default function AirportAutocomplete({
   onChange,
   airports,
   placeholder = 'Airport',
-  className = ''
+  className = '',
+  onBlur,
+  autoFocus = false
 }: AirportAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
@@ -85,6 +89,15 @@ export default function AirportAutocomplete({
     onChange(code);
     setIsOpen(false);
     inputRef.current?.blur();
+    onBlur?.();
+  };
+
+  const handleBlur = () => {
+    // Delay blur to allow click selection to complete
+    setTimeout(() => {
+      setIsOpen(false);
+      onBlur?.();
+    }, 200);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -127,8 +140,10 @@ export default function AirportAutocomplete({
             setIsOpen(true);
           }
         }}
+        onBlur={handleBlur}
         placeholder={placeholder}
         className={className}
+        autoFocus={autoFocus}
       />
 
       {isOpen && filteredAirports.length > 0 && (
