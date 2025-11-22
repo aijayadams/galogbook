@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           return `${hh}:${mm2}:${ss2}`;
         })();
 
-        return {
+        const baseFlight: Flight = {
           uuid: String(s.id ?? i+1),
           date,
           page: i + 1,
@@ -77,7 +77,13 @@ export async function POST(request: NextRequest) {
           timeIn: end,
           tachTime: s.tachDuration ?? s.hobbDuration ?? undefined,
           wallTime: s.hobbDuration ?? undefined,
-        } as Flight;
+        };
+
+        return {
+          ...baseFlight,
+          jpiFlightNumber: s.id ?? i + 1,
+          jpiFilename: jpiFile.name,
+        };
       });
     } else {
       return NextResponse.json({ error: 'No flights data provided' }, { status: 400 });
@@ -93,16 +99,20 @@ export async function POST(request: NextRequest) {
     fs.mkdirSync(tripDir, { recursive: true });
     
     // Save uploaded files
+    let jpiStoredFilename: string | undefined;
     if (jpiFile) {
       const jpiBuffer = Buffer.from(await jpiFile.arrayBuffer());
       const jpiPath = path.join(tripDir, `jpi_${jpiFile.name}`);
       fs.writeFileSync(jpiPath, jpiBuffer);
+      jpiStoredFilename = path.basename(jpiPath);
     }
     
+    let fuelStoredFilename: string | undefined;
     if (fuelFile) {
       const fuelBuffer = Buffer.from(await fuelFile.arrayBuffer());
       const fuelPath = path.join(tripDir, `fuel_${fuelFile.name}`);
       fs.writeFileSync(fuelPath, fuelBuffer);
+      fuelStoredFilename = path.basename(fuelPath);
     }
     
     // Load existing trips and add new one
@@ -115,10 +125,18 @@ export async function POST(request: NextRequest) {
           .filter((n) => Number.isFinite(n))
       : [];
 
+    const flightsWithFilenames: Flight[] = flights.map((f) => ({
+      ...f,
+      jpiFilename: jpiStoredFilename ?? f.jpiFilename,
+      fuelInvoiceFilename: fuelStoredFilename ?? f.fuelInvoiceFilename,
+    }));
+
     const newTrip: Trip = {
       uuid: tripId,
-      flights: flights,
-      jplFlights: jpiSelectedIds.length > 0 ? jpiSelectedIds : (jpiFile ? flights.map((_, idx) => idx + 1) : []),
+      flights: flightsWithFilenames,
+      jplFlights: jpiSelectedIds.length > 0 ? jpiSelectedIds : (jpiFile ? flightsWithFilenames.map((_, idx) => idx + 1) : []),
+      jpiFilename: jpiStoredFilename,
+      fuelInvoiceFilename: fuelStoredFilename,
     };
     
     const updatedTrips = [...existingTrips, newTrip];

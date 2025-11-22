@@ -8,6 +8,9 @@ export interface Trip {
   flights: Flight[];  
   // A JPL file
   jplFlights: number[];
+  // Optional filenames associated with this trip
+  jpiFilename?: string;
+  fuelInvoiceFilename?: string;
 }
 
 export interface Flight {
@@ -55,6 +58,10 @@ export interface Flight {
   fuelUsed?: number;
   fuelCost?: number;
 
+  // JPI / fuel invoice metadata
+  jpiFlightNumber?: number;
+  jpiFilename?: string;
+  fuelInvoiceFilename?: string;
 
   // Route of flight
   from?: string;

@@ -40,7 +40,7 @@ export async function listFlightsFromJpi(ab: ArrayBuffer): Promise<JpiFlightReco
     return d.listFlights();
   } catch {
     throw new Error(
-      "JPI parser unavailable. Install and build it: npm i github:aijayadams/jpi && (cd node_modules/decodejpi && npm run build)"
+      "JPI parser unavailable. Install and build it: npm i github:AiJayAdams/jpi && (cd node_modules/decodejpi && npm run build)"
     );
   }
 }
@@ -51,7 +51,7 @@ export async function decodeFlightCsvFromJpi(ab: ArrayBuffer, flightId: number):
     return mod.decodeJpiBufferToCsv(toUint8Array(ab), flightId);
   } catch {
     throw new Error(
-      "JPI parser unavailable. Install and build it: npm i github:aijayadams/jpi && (cd node_modules/decodejpi && npm run build)"
+      "JPI parser unavailable. Install and build it: npm i github:AiJayAdams/jpi && (cd node_modules/decodejpi && npm run build)"
     );
   }
 }
@@ -77,7 +77,7 @@ export async function summarizeFlightsFromJpi(ab: ArrayBuffer): Promise<JpiFligh
     return d.summarizeFlights();
   } catch {
     throw new Error(
-      "JPI parser unavailable. Install and build it: npm i github:aijayadams/jpi && (cd node_modules/decodejpi && npm run build)"
+      "JPI parser unavailable. Install and build it: npm i github:AiJayAdams/jpi && (cd node_modules/decodejpi && npm run build)"
     );
   }
 }
