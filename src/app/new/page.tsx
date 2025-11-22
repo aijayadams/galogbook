@@ -4,6 +4,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { Flight } from '@/types/flight';
 import { useRouter } from 'next/navigation';
+import AirportAutocomplete from '@/components/AirportAutocomplete';
+import airportsData from '@/lib/airports.json';
 
 interface FileUploadState {
   jpiFile: File | null;
@@ -25,12 +27,26 @@ export default function NewTripPage() {
     fuelInvoiceFile: null,
     dragOver: null,
   });
-  
+
   const [flights, setFlights] = useState<Flight[]>([]);
   const [selectedFlights, setSelectedFlights] = useState<Set<string>>(new Set());
   const [fuelData, setFuelData] = useState<FuelData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+
+  // Normalize airports data for autocomplete
+  const airports = useMemo(() => {
+    return (airportsData as unknown[]).map((a: unknown) => {
+      const rec = a as Record<string, unknown>;
+      return {
+        icao: String(rec.icao || ''),
+        iata: rec.iata ? String(rec.iata) : undefined,
+        name: String(rec.name || ''),
+        lat: Number(rec.lat || 0),
+        lng: Number(rec.lng || 0)
+      };
+    }).filter(a => a.icao && a.name);
+  }, []);
 
   // Handle file uploads
   const handleDragOver = useCallback((e: React.DragEvent, type: 'jpi' | 'fuel') => {
@@ -174,6 +190,13 @@ export default function NewTripPage() {
         }
       }
     }
+  }, []);
+
+  // Handle flight field updates
+  const updateFlightField = useCallback((flightId: string, field: keyof Flight, value: string) => {
+    setFlights(prev => prev.map(f =>
+      f.uuid === flightId ? { ...f, [field]: value } : f
+    ));
   }, []);
 
   // Handle flight selection
@@ -466,8 +489,24 @@ export default function NewTripPage() {
                         />
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.date}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.from || '-'}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.to || '-'}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <AirportAutocomplete
+                          value={flight.from || ''}
+                          onChange={(value) => updateFlightField(flight.uuid, 'from', value)}
+                          airports={airports}
+                          placeholder="From"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <AirportAutocomplete
+                          value={flight.to || ''}
+                          onChange={(value) => updateFlightField(flight.uuid, 'to', value)}
+                          airports={airports}
+                          placeholder="To"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.timeOff || '-'}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{flight.timeIn || '-'}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{flight.tachTime || '-'}</td>

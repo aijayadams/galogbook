@@ -258,5 +258,71 @@
         "fuelCost": 118.33
       }
     ]
+  },
+  {
+    "uuid": "2025-08-03_01",
+    "flights": [
+      {
+        "uuid": "593",
+        "date": "2025-08-03",
+        "page": 2,
+        "category": "ASEL",
+        "tachTime": 1.6,
+        "wallTime": 1.8,
+        "timeOff": "10:02:48",
+        "timeIn": "11:50:48",
+        "from": "HWD",
+        "to": "HWD",
+        "fuelUsed": 16.7,
+        "fuelCost": 114.23
+      }
+    ],
+    "jplFlights": [
+      593
+    ]
+  },
+  {
+    "uuid": "2025-08-03_02",
+    "flights": [
+      {
+        "uuid": "593",
+        "date": "2025-08-03",
+        "page": 2,
+        "category": "ASEL",
+        "tachTime": 1.6,
+        "wallTime": 1.8,
+        "timeOff": "10:02:48",
+        "timeIn": "11:50:48",
+        "from": "HWD",
+        "to": "HWD",
+        "fuelUsed": 16.7,
+        "fuelCost": 114.23
+      }
+    ],
+    "jplFlights": [
+      593
+    ]
+  },
+  {
+    "uuid": "2025-08-08_01",
+    "flights": [
+      {
+        "uuid": "594",
+        "date": "2025-08-08",
+        "page": 3,
+        "category": "ASEL",
+        "tachTime": 1.2,
+        "wallTime": 1.2,
+        "timeOff": "07:49:02",
+        "timeIn": "09:01:02",
+        "from": "KSOB",
+        "to": "TVL",
+        "fuelUsed": 0,
+        "fuelCost": 0
+      }
+    ],
+    "jplFlights": [
+      594
+    ]
   }
 ]
