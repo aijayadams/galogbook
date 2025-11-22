@@ -125,6 +125,7 @@ export default async function ViewTripPage({ params }: ViewTripPageProps) {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Used</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Cost</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Remarks</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -148,6 +149,14 @@ export default async function ViewTripPage({ params }: ViewTripPageProps) {
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelUsed || '-'}</td>
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelCost ? `$${flight.fuelCost.toFixed(2)}` : '-'}</td>
                   <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>{flight.remarks || '-'}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <Link
+                      href={`/view/${tripId}/${flight.uuid}`}
+                      className="text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      View
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
