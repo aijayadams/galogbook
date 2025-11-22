@@ -1,52 +1,113 @@
-
 import { Trip, FlightsFromDisk } from '@/types/flight';
-import { EyeIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-// Load trips function as requested
+interface ViewTripPageProps {
+  params: Promise<{
+    tripId: string;
+  }>;
+}
+
+// Load trips function
 function loadTrips(): Trip[] {
   return FlightsFromDisk();
 }
 
-export default function List() {
+export default async function ViewTripPage({ params }: ViewTripPageProps) {
+  const { tripId } = await params;
   const trips = loadTrips();
-  const totalFlights = trips.reduce((sum, trip) => sum + trip.flights.length, 0);
 
-  // Flatten trips into rows with trip information
-  const flightRows = trips.flatMap((trip, tripIndex) => 
-    trip.flights.map((flight, flightIndex) => ({
-      ...flight,
-      tripId: trip.uuid,
-      tripIndex: tripIndex + 1,
-      isFirstFlightInTrip: flightIndex === 0,
-      flightsInTrip: trip.flights.length,
-      tripTotalTime: trip.flights.reduce((sum, f) => sum + (f.tachTime || 0), 0),
-      tripTotalFuel: trip.flights.reduce((sum, f) => sum + (f.fuelUsed || 0), 0),
-      tripTotalCost: trip.flights.reduce((sum, f) => sum + (f.fuelCost || 0), 0)
-    }))
-  );
+  // Find the specific trip
+  const trip = trips.find(t => t.uuid === tripId);
+
+  // If trip not found, show 404
+  if (!trip) {
+    notFound();
+  }
+
+  // Calculate trip totals
+  const totalFlightTime = trip.flights.reduce((sum, f) => sum + (f.tachTime || 0), 0);
+  const totalFuelUsed = trip.flights.reduce((sum, f) => sum + (f.fuelUsed || 0), 0);
+  const totalFuelCost = trip.flights.reduce((sum, f) => sum + (f.fuelCost || 0), 0);
+  const totalTakeoffsDay = trip.flights.reduce((sum, f) => sum + (f.takeoffsDay || 0), 0);
+  const totalTakeoffsNight = trip.flights.reduce((sum, f) => sum + (f.takeoffsNight || 0), 0);
+  const totalPIC = trip.flights.reduce((sum, f) => sum + (f.pilotInCommand || 0), 0);
+  const totalDualReceived = trip.flights.reduce((sum, f) => sum + (f.dualReceived || 0), 0);
+  const totalCrossCountry = trip.flights.reduce((sum, f) => sum + (f.dayCrossCountry || 0) + (f.nightCrossCountry || 0), 0);
 
   return (
     <div className="container mx-auto p-6">
+      {/* Header with back button */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Flight Log</h1>
-        <Link 
-          href="/new"
-          className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-        >
-          <PlusIcon className="h-5 w-5" />
-          <span>New Flight</span>
-        </Link>
+        <div className="flex items-center space-x-4">
+          <Link
+            href="/list"
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+            <span>Back to Flight Log</span>
+          </Link>
+          <div className="border-l h-6 border-gray-300"></div>
+          <h1 className="text-3xl font-bold">Trip {tripId}</h1>
+        </div>
       </div>
-      
-      {flightRows.length === 0 ? (
-        <p className="text-gray-500">No flights found.</p>
-      ) : (
+
+      {/* Trip Summary Cards */}
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-gray-500 text-sm">Total Flights</div>
+          <div className="text-2xl font-bold text-gray-900">{trip.flights.length}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-gray-500 text-sm">Total Flight Time</div>
+          <div className="text-2xl font-bold text-gray-900">{totalFlightTime.toFixed(1)}h</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-gray-500 text-sm">Total Fuel Used</div>
+          <div className="text-2xl font-bold text-gray-900">{totalFuelUsed.toFixed(1)} gal</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-gray-500 text-sm">Total Fuel Cost</div>
+          <div className="text-2xl font-bold text-gray-900">${totalFuelCost.toFixed(2)}</div>
+        </div>
+      </div>
+
+      {/* Additional Stats */}
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="text-blue-700 text-xs font-medium">Day Takeoffs</div>
+          <div className="text-xl font-bold text-blue-900">{totalTakeoffsDay}</div>
+        </div>
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="text-blue-700 text-xs font-medium">Night Takeoffs</div>
+          <div className="text-xl font-bold text-blue-900">{totalTakeoffsNight}</div>
+        </div>
+        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+          <div className="text-green-700 text-xs font-medium">PIC Time</div>
+          <div className="text-xl font-bold text-green-900">{totalPIC.toFixed(1)}h</div>
+        </div>
+        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+          <div className="text-purple-700 text-xs font-medium">Dual Received</div>
+          <div className="text-xl font-bold text-purple-900">{totalDualReceived.toFixed(1)}h</div>
+        </div>
+        <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
+          <div className="text-amber-700 text-xs font-medium">Cross Country</div>
+          <div className="text-xl font-bold text-amber-900">{totalCrossCountry.toFixed(1)}h</div>
+        </div>
+      </div>
+
+      {/* Flights Table */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="px-6 py-4 bg-gray-50 border-b">
+          <h2 className="text-xl font-semibold text-gray-900">Flights</h2>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+          <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b w-24">Trip</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Flight</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Date</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Category</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">From</th>
@@ -64,40 +125,12 @@ export default function List() {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Used</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Cost</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Remarks</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {flightRows.map((flight, index) => (
+              {trip.flights.map((flight, index) => (
                 <tr key={flight.uuid || index} className="hover:bg-gray-50">
-                  {/* Trip column with rowspan for multi-flight trips */}
-                  {flight.isFirstFlightInTrip && (
-                    <td 
-                      rowSpan={flight.flightsInTrip} 
-                      className={`px-6 py-3 text-sm border-r-2 w-24 ${
-                        flight.flightsInTrip > 1 
-                          ? 'bg-blue-50 border-blue-200 text-blue-900 font-medium' 
-                          : 'bg-gray-50 border-gray-200 text-gray-700'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center space-y-1">
-                        <div className="text-lg font-bold">#{flight.tripIndex}</div>
-                        {flight.flightsInTrip > 1 && (
-                          <>
-                            <div className="text-xs text-center">
-                              {flight.flightsInTrip} flights
-                            </div>
-                            <div className="text-xs text-center border-t pt-1">
-                              <div>{flight.tripTotalTime.toFixed(1)}h</div>
-                              <div>{flight.tripTotalFuel.toFixed(1)} gal</div>
-                              <div>${flight.tripTotalCost.toFixed(0)}</div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                  
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{index + 1}</td>
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.date}</td>
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.category}</td>
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.from || '-'}</td>
@@ -115,40 +148,10 @@ export default function List() {
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelUsed || '-'}</td>
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelCost ? `$${flight.fuelCost.toFixed(2)}` : '-'}</td>
                   <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>{flight.remarks || '-'}</td>
-                  
-                  {/* Actions column - only show for first flight in trip */}
-                  {flight.isFirstFlightInTrip && (
-                    <td rowSpan={flight.flightsInTrip} className="px-3 py-3 text-center border-l">
-                      <Link
-                        href={`/view/${flight.tripId}`}
-                        className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        <EyeIcon className="h-4 w-4" />
-                        <span>View</span>
-                      </Link>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-      
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="text-gray-500">Total Trips</div>
-          <div className="text-2xl font-bold text-gray-900">{trips.length}</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="text-gray-500">Total Flights</div>
-          <div className="text-2xl font-bold text-gray-900">{totalFlights}</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="text-gray-500">Average Flights per Trip</div>
-          <div className="text-2xl font-bold text-gray-900">
-            {trips.length > 0 ? (totalFlights / trips.length).toFixed(1) : '0'}
-          </div>
         </div>
       </div>
     </div>
