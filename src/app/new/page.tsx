@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { CloudArrowUpIcon, DocumentIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { Flight } from '@/types/flight';
 import { useRouter } from 'next/navigation';
 import AirportAutocomplete from '@/components/AirportAutocomplete';
-import FlightEditModal from '@/components/FlightEditModal';
 import airportsData from '@/lib/airports.json';
 
 interface FileUploadState {
@@ -35,7 +34,6 @@ export default function NewTripPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
   const [editingField, setEditingField] = useState<{ flightId: string; field: 'from' | 'to' } | null>(null);
-  const [editingFlight, setEditingFlight] = useState<Flight | null>(null);
 
   // Normalize airports data for autocomplete
   const airports = useMemo(() => {
@@ -202,13 +200,6 @@ export default function NewTripPage() {
     ));
   }, []);
 
-  // Handle saving edited flight
-  const handleSaveFlight = useCallback((editedFlight: Flight) => {
-    setFlights(prev => prev.map(f =>
-      f.uuid === editedFlight.uuid ? editedFlight : f
-    ));
-  }, []);
-
   // Handle flight selection
   const toggleFlightSelection = useCallback((flightId: string) => {
     setSelectedFlights(prev => {
@@ -291,11 +282,11 @@ export default function NewTripPage() {
       if (!response.ok) {
         throw new Error('Failed to create trip');
       }
-      
-      await response.json();
-      
-      // Success! Navigate back to the list page
-      router.push('/list');
+
+      const result = await response.json();
+
+      // Success! Navigate to the trip view page
+      router.push(`/view/${result.tripId}`);
       
     } catch (error) {
       console.error('Error creating trip:', error);
@@ -482,7 +473,6 @@ export default function NewTripPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel Used</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel Cost</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -552,15 +542,6 @@ export default function NewTripPage() {
                       <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>
                         {flight.remarks || '-'}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => setEditingFlight(flight)}
-                          className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                          <span>Edit</span>
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -617,16 +598,6 @@ export default function NewTripPage() {
               )}
             </button>
           </div>
-        )}
-
-        {/* Flight Edit Modal */}
-        {editingFlight && (
-          <FlightEditModal
-            flight={editingFlight}
-            airports={airports}
-            onSave={handleSaveFlight}
-            onClose={() => setEditingFlight(null)}
-          />
         )}
       </div>
     </div>

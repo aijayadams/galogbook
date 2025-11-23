@@ -324,5 +324,90 @@
     "jplFlights": [
       594
     ]
+  },
+  {
+    "uuid": "2025-08-03_03",
+    "flights": [
+      {
+        "uuid": "593",
+        "date": "2025-08-03",
+        "page": 2,
+        "category": "ASEL",
+        "tachTime": 1.6,
+        "wallTime": 1.8,
+        "timeOff": "10:02:48",
+        "timeIn": "11:50:48",
+        "from": "HWD",
+        "to": "HWD",
+        "fuelUsed": 16.7,
+        "fuelCost": 114.23,
+        "landingDay": 3,
+        "landingNight": 0,
+        "takeoffsDay": 0
+      }
+    ],
+    "jplFlights": [
+      593
+    ]
+  },
+  {
+    "uuid": "2025-08-03_04",
+    "flights": [
+      {
+        "uuid": "593",
+        "date": "2025-08-03",
+        "page": 2,
+        "category": "ASEL",
+        "tachTime": 1.6,
+        "wallTime": 1.8,
+        "timeOff": "10:02:48",
+        "timeIn": "11:50:48",
+        "from": "HWD",
+        "to": "HWD",
+        "fuelUsed": 6.68,
+        "fuelCost": 45.69,
+        "landingDay": 50,
+        "landingNight": 0,
+        "remarks": "I am a remark.",
+        "takeoffsNight": 0
+      },
+      {
+        "uuid": "594",
+        "date": "2025-08-08",
+        "page": 3,
+        "category": "ASEL",
+        "tachTime": 1.2,
+        "wallTime": 1.2,
+        "timeOff": "07:49:02",
+        "timeIn": "09:01:02",
+        "from": "SFO",
+        "to": "TVL",
+        "fuelUsed": 5.01,
+        "fuelCost": 34.27,
+        "landingNight": 0
+      },
+      {
+        "uuid": "596",
+        "date": "2025-08-09",
+        "page": 5,
+        "category": "ASEL",
+        "tachTime": 1.2,
+        "wallTime": 1.2,
+        "timeOff": "08:25:38",
+        "timeIn": "09:37:38",
+        "from": "TVL",
+        "to": "HWD",
+        "fuelUsed": 5.01,
+        "fuelCost": 34.27,
+        "pilotInCommand": 0,
+        "landingDay": 0,
+        "remarks": ""
+      }
+    ],
+    "jplFlights": [
+      593,
+      594,
+      596
+    ]
   }
 ]

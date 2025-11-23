@@ -1,7 +1,13 @@
-import { Trip, FlightsFromDisk } from '@/types/flight';
+'use client';
+
+import React, { useState, useEffect, useMemo, use } from 'react';
+import { Trip, Flight } from '@/types/flight';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import EditableCell from '@/components/EditableCell';
+import AirportAutocomplete from '@/components/AirportAutocomplete';
+import airportsData from '@/lib/airports.json';
 
 interface ViewTripPageProps {
   params: Promise<{
@@ -9,21 +15,104 @@ interface ViewTripPageProps {
   }>;
 }
 
-// Load trips function
-function loadTrips(): Trip[] {
-  return FlightsFromDisk();
-}
+export default function ViewTripPage({ params }: ViewTripPageProps) {
+  const { tripId } = use(params);
+  const router = useRouter();
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingField, setEditingField] = useState<{ flightIndex: number; field: 'from' | 'to' } | null>(null);
 
-export default async function ViewTripPage({ params }: ViewTripPageProps) {
-  const { tripId } = await params;
-  const trips = loadTrips();
+  // Normalize airports data for autocomplete
+  const airports = useMemo(() => {
+    return (airportsData as unknown[]).map((a: unknown) => {
+      const rec = a as Record<string, unknown>;
+      return {
+        icao: String(rec.icao || ''),
+        iata: rec.iata ? String(rec.iata) : undefined,
+        name: String(rec.name || ''),
+        lat: Number(rec.lat || 0),
+        lng: Number(rec.lng || 0)
+      };
+    }).filter(a => a.icao && a.name);
+  }, []);
 
-  // Find the specific trip
-  const trip = trips.find(t => t.uuid === tripId);
+  // Load trip data
+  useEffect(() => {
+    const loadTrip = async () => {
+      try {
+        const response = await fetch(`/api/get-trip?tripId=${tripId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            router.push('/list');
+            return;
+          }
+          throw new Error('Failed to load trip');
+        }
+        const data = await response.json();
+        setTrip(data.trip);
+      } catch (error) {
+        console.error('Error loading trip:', error);
+        alert('Failed to load trip');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTrip();
+  }, [tripId, router]);
 
-  // If trip not found, show 404
+  // Auto-save trip when it changes
+  useEffect(() => {
+    if (!trip || loading) return;
+
+    const saveTrip = async () => {
+      setSaving(true);
+      try {
+        const response = await fetch('/api/update-trip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tripId, trip })
+        });
+        if (!response.ok) throw new Error('Failed to save trip');
+      } catch (error) {
+        console.error('Error saving trip:', error);
+        alert('Failed to save changes');
+      } finally {
+        setSaving(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(saveTrip, 1000);
+    return () => clearTimeout(debounceTimer);
+  }, [trip, tripId, loading]);
+
+  // Update flight field
+  const updateFlightField = <K extends keyof Flight>(
+    flightIndex: number,
+    field: K,
+    value: Flight[K]
+  ) => {
+    if (!trip) return;
+    const updatedFlights = trip.flights.map((f, i) =>
+      i === flightIndex ? { ...f, [field]: value } : f
+    );
+    setTrip({ ...trip, flights: updatedFlights });
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
   if (!trip) {
-    notFound();
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
+        <div className="text-xl text-gray-600">Trip not found</div>
+      </div>
+    );
   }
 
   // Calculate trip totals
@@ -51,6 +140,11 @@ export default async function ViewTripPage({ params }: ViewTripPageProps) {
           <div className="border-l h-6 border-gray-300"></div>
           <h1 className="text-3xl font-bold">Trip {tripId}</h1>
         </div>
+        {saving && (
+          <div className="text-sm text-gray-500">
+            Saving...
+          </div>
+        )}
       </div>
 
       {/* Trip Summary Cards */}
@@ -100,7 +194,7 @@ export default async function ViewTripPage({ params }: ViewTripPageProps) {
       {/* Flights Table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="px-6 py-4 bg-gray-50 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Flights</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Flights (Click any field to edit)</h2>
         </div>
 
         <div className="overflow-x-auto">
@@ -124,31 +218,191 @@ export default async function ViewTripPage({ params }: ViewTripPageProps) {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Cross Country</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Used</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Cost</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Remarks</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {trip.flights.map((flight, index) => (
-                <tr key={flight.uuid || index} className="hover:bg-gray-50">
+                <React.Fragment key={flight.uuid || index}>
+                <tr className="hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{index + 1}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.date}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.category}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.from || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.to || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.timeOff || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.timeIn || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">{flight.tachTime || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.takeoffsDay || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.landingDay || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.takeoffsNight || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.landingNight || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.pilotInCommand || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.dualReceived || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.dayCrossCountry || flight.nightCrossCountry || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelUsed || '-'}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{flight.fuelCost ? `$${flight.fuelCost.toFixed(2)}` : '-'}</td>
-                  <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>{flight.remarks || '-'}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.date}
+                      onSave={(value) => updateFlightField(index, 'date', value as string)}
+                      type="date"
+                      className="w-32"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.category}
+                      onSave={(value) => updateFlightField(index, 'category', value as string)}
+                      className="w-20"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {editingField?.flightIndex === index && editingField?.field === 'from' ? (
+                      <AirportAutocomplete
+                        value={flight.from || ''}
+                        onChange={(value) => updateFlightField(index, 'from', value)}
+                        airports={airports}
+                        placeholder="From"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => setEditingField(null)}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setEditingField({ flightIndex: index, field: 'from' })}
+                        className="w-20 px-2 py-1 text-left hover:bg-gray-100 rounded transition-colors"
+                      >
+                        {flight.from || '-'}
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {editingField?.flightIndex === index && editingField?.field === 'to' ? (
+                      <AirportAutocomplete
+                        value={flight.to || ''}
+                        onChange={(value) => updateFlightField(index, 'to', value)}
+                        airports={airports}
+                        placeholder="To"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => setEditingField(null)}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setEditingField({ flightIndex: index, field: 'to' })}
+                        className="w-20 px-2 py-1 text-left hover:bg-gray-100 rounded transition-colors"
+                      >
+                        {flight.to || '-'}
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.timeOff}
+                      onSave={(value) => updateFlightField(index, 'timeOff', value as string)}
+                      type="time"
+                      className="w-24"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.timeIn}
+                      onSave={(value) => updateFlightField(index, 'timeIn', value as string)}
+                      type="time"
+                      className="w-24"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <EditableCell
+                      value={flight.tachTime}
+                      onSave={(value) => updateFlightField(index, 'tachTime', value as number)}
+                      type="number"
+                      step="0.1"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.takeoffsDay}
+                      onSave={(value) => updateFlightField(index, 'takeoffsDay', value as number)}
+                      type="number"
+                      min="0"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.landingDay}
+                      onSave={(value) => updateFlightField(index, 'landingDay', value as number)}
+                      type="number"
+                      min="0"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.takeoffsNight}
+                      onSave={(value) => updateFlightField(index, 'takeoffsNight', value as number)}
+                      type="number"
+                      min="0"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.landingNight}
+                      onSave={(value) => updateFlightField(index, 'landingNight', value as number)}
+                      type="number"
+                      min="0"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.pilotInCommand}
+                      onSave={(value) => updateFlightField(index, 'pilotInCommand', value as number)}
+                      type="number"
+                      step="0.1"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.dualReceived}
+                      onSave={(value) => updateFlightField(index, 'dualReceived', value as number)}
+                      type="number"
+                      step="0.1"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.dayCrossCountry || flight.nightCrossCountry}
+                      onSave={(value) => updateFlightField(index, 'dayCrossCountry', value as number)}
+                      type="number"
+                      step="0.1"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.fuelUsed}
+                      onSave={(value) => updateFlightField(index, 'fuelUsed', value as number)}
+                      type="number"
+                      step="0.1"
+                      className="w-16"
+                    />
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <EditableCell
+                      value={flight.fuelCost}
+                      onSave={(value) => updateFlightField(index, 'fuelCost', value as number)}
+                      type="number"
+                      step="0.01"
+                      className="w-20"
+                    />
+                  </td>
                 </tr>
+                <tr className="bg-gray-50 hover:bg-gray-100">
+                  <td colSpan={17} className="px-4 py-2 text-sm text-gray-900">
+                    <div className="flex items-start space-x-2">
+                      <span className="text-gray-500 font-medium whitespace-nowrap">Remarks:</span>
+                      <div className="flex-1">
+                        <EditableCell
+                          value={flight.remarks}
+                          onSave={(value) => updateFlightField(index, 'remarks', value as string)}
+                          className="w-full"
+                          placeholder="No remarks"
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
