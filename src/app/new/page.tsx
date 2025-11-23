@@ -79,7 +79,21 @@ export default function NewTripPage() {
           formData.append('file', file);
           const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
           if (!res.ok) throw new Error('Failed to parse JPI file');
-          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string; from?: string; to?: string }[] };
+          const data = await res.json() as {
+            flights: {
+              id: number;
+              date: string;
+              index: number;
+              tachDuration?: number;
+              hobbDuration?: number;
+              timeOff?: string;
+              timeIn?: string;
+              from?: string;
+              to?: string;
+              jpiFlightNumber?: number;
+              jpiFilename?: string;
+            }[];
+          };
           const mapped: Flight[] = (data.flights || []).map((f) => ({
             uuid: String(f.id),
             date: f.date,
@@ -91,6 +105,8 @@ export default function NewTripPage() {
             timeIn: f.timeIn,
             from: f.from,
             to: f.to,
+            jpiFlightNumber: f.jpiFlightNumber ?? f.id,
+            jpiFilename: f.jpiFilename || file.name,
           }));
           setFlights(mapped);
           setSelectedFlights(new Set());
@@ -144,7 +160,21 @@ export default function NewTripPage() {
           formData.append('file', file);
           const res = await fetch('/api/list-jpi', { method: 'POST', body: formData });
           if (!res.ok) throw new Error('Failed to parse JPI file');
-          const data = await res.json() as { flights: { id: number; date: string; index: number; tachDuration?: number; hobbDuration?: number; timeOff?: string; timeIn?: string; from?: string; to?: string }[] };
+          const data = await res.json() as {
+            flights: {
+              id: number;
+              date: string;
+              index: number;
+              tachDuration?: number;
+              hobbDuration?: number;
+              timeOff?: string;
+              timeIn?: string;
+              from?: string;
+              to?: string;
+              jpiFlightNumber?: number;
+              jpiFilename?: string;
+            }[];
+          };
           const mapped: Flight[] = (data.flights || []).map((f) => ({
             uuid: String(f.id),
             date: f.date,
@@ -156,6 +186,8 @@ export default function NewTripPage() {
             timeIn: f.timeIn,
             from: f.from,
             to: f.to,
+            jpiFlightNumber: f.jpiFlightNumber ?? f.id,
+            jpiFilename: f.jpiFilename || file.name,
           }));
           setFlights(mapped);
           setSelectedFlights(new Set());
@@ -234,9 +266,16 @@ export default function NewTripPage() {
       return flights.map(f => ({ ...f, fuelUsed: 0, fuelCost: 0 }));
     }
 
+    const fuelInvoiceFilename = uploadState.fuelInvoiceFile?.name;
+
     return flights.map(flight => {
       if (!selectedFlights.has(flight.uuid)) {
-        return { ...flight, fuelUsed: 0, fuelCost: 0 };
+        return {
+          ...flight,
+          fuelUsed: 0,
+          fuelCost: 0,
+          fuelInvoiceFilename: fuelInvoiceFilename ?? flight.fuelInvoiceFilename,
+        };
       }
       
       const flightTimeRatio = (flight.tachTime || 0) / totalFlightTime;
@@ -246,10 +285,11 @@ export default function NewTripPage() {
       return {
         ...flight,
         fuelUsed: Number(fuelUsed.toFixed(2)),
-        fuelCost: Number(fuelCost.toFixed(2))
+        fuelCost: Number(fuelCost.toFixed(2)),
+        fuelInvoiceFilename: fuelInvoiceFilename ?? flight.fuelInvoiceFilename,
       };
     });
-  }, [flights, selectedFlights, fuelData]);
+  }, [flights, selectedFlights, fuelData, uploadState.fuelInvoiceFile]);
 
   // Create trip function
   const createTrip = useCallback(async () => {

@@ -1,267 +1,24 @@
 [
   {
-    "uuid": "92e618ff-c4f4-4151-982d-e7b665a18e1f",
+    "uuid": "2025-07-19_01",
     "flights": [
       {
-        "date": "2024-01-15",
+        "uuid": "592",
+        "date": "2025-07-19",
         "page": 1,
         "category": "ASEL",
-        "takeoffsDay": 1,
-        "landingDay": 1,
-        "landingDayFullStop": 1,
-        "dayVfr": 1.5,
-        "pilotInCommand": 1.5,
-        "tachTime": 1.5,
-        "wallTime": 1.5,
-        "timeOff": "14:30",
-        "timeIn": "16:00",
-        "tachOff": 123.4,
-        "tachIn": 124.9,
-        "fuelSupplied": 25,
-        "fuelUsed": 12.5,
-        "fuelCost": 75,
-        "from": "KJFK",
-        "to": "KLGA",
-        "route": [
-          "KJFK",
-          "KLGA"
-        ],
-        "approach": [
-          {
-            "airport": "KLGA",
-            "aproachType": "ILS",
-            "runway": "04",
-            "remarks": "Good approach"
-          }
-        ],
-        "remarks": "Training flight - pattern work"
+        "tachTime": 0.9,
+        "wallTime": 1,
+        "timeOff": "12:40:24",
+        "timeIn": "13:40:24",
+        "from": "HWD",
+        "to": "HWD",
+        "jpiFlightNumber": 592,
+        "jpiFilename": "jpi_U250901.JPI 2",
+        "fuelUsed": 6.01,
+        "fuelCost": 41.12,
+        "fuelInvoiceFilename": "fuel_Invoice_08032025.pdf"
       },
-      {
-        "uuid": "a5315f8f-bedd-4d8d-8b96-7cdb54de033d",
-        "date": "2024-01-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 3,
-        "takeoffsNight": 2,
-        "landingDay": 3,
-        "landingDayFullStop": 3,
-        "landingNight": 2,
-        "landingNightFullStop": 2,
-        "dayVfr": 1.2,
-        "nightVfr": 0.8,
-        "dualReceived": 2,
-        "tachTime": 2,
-        "wallTime": 2,
-        "timeOff": "18:00",
-        "timeIn": "20:00",
-        "tachOff": 124.9,
-        "tachIn": 126.9,
-        "fuelSupplied": 30,
-        "fuelUsed": 18,
-        "fuelCost": 90,
-        "from": "KLGA",
-        "to": "KLGA",
-        "route": [
-          "KLGA"
-        ],
-        "remarks": "Night currency training"
-      }
-    ]
-  },
-  {
-    "uuid": "abcd",
-    "flights": [
-      {
-        "date": "2024-02-01",
-        "page": 2,
-        "category": "AMEL",
-        "takeoffsDay": 1,
-        "landingDay": 1,
-        "landingDayFullStop": 1,
-        "dayVfr": 2.5,
-        "dayCrossCountry": 2.5,
-        "pilotInCommand": 2.5,
-        "pilotInCommandCrossCountry": 2.5,
-        "tachTime": 2.5,
-        "wallTime": 2.5,
-        "timeOff": "09:00",
-        "timeIn": "11:30",
-        "tachOff": 456.7,
-        "tachIn": 459.2,
-        "fuelSupplied": 45,
-        "fuelUsed": 28,
-        "fuelCost": 140,
-        "from": "KJFK",
-        "to": "KBOS",
-        "route": [
-          "KJFK",
-          "KBOS"
-        ],
-        "approach": [
-          {
-            "airport": "KBOS",
-            "aproachType": "GPS",
-            "runway": "09",
-            "remarks": "Clear weather"
-          }
-        ],
-        "remarks": "Cross country flight to Boston"
-      }
-    ]
-  },
-  {
-    "uuid": "2025-09-07_01",
-    "flights": [
-      {
-        "uuid": "57a6afbe-240e-45c6-b54d-c9921c252823",
-        "date": "2024-12-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 1,
-        "landingDay": 1,
-        "landingDayFullStop": 1,
-        "dayVfr": 1.2,
-        "pilotInCommand": 1.2,
-        "tachTime": 1.2,
-        "wallTime": 1.2,
-        "timeOff": "09:00",
-        "timeIn": "10:12",
-        "tachOff": 456.7,
-        "tachIn": 457.9,
-        "from": "KJFK",
-        "to": "KLGA",
-        "route": [
-          "KJFK",
-          "KLGA"
-        ],
-        "remarks": "Training flight - pattern work",
-        "fuelUsed": 10.38,
-        "fuelCost": 71
-      },
-      {
-        "uuid": "17406a65-55d3-4720-8546-871211565b8b",
-        "date": "2024-12-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 2,
-        "landingDay": 2,
-        "landingDayFullStop": 2,
-        "dayVfr": 0.8,
-        "pilotInCommand": 0.8,
-        "tachTime": 0.8,
-        "wallTime": 0.8,
-        "timeOff": "11:00",
-        "timeIn": "11:48",
-        "tachOff": 457.9,
-        "tachIn": 458.7,
-        "from": "KLGA",
-        "to": "KBOS",
-        "route": [
-          "KLGA",
-          "KBOS"
-        ],
-        "remarks": "Cross country to Boston",
-        "fuelUsed": 6.92,
-        "fuelCost": 47.33
-      }
-    ]
-  },
-  {
-    "uuid": "2025-09-07_02",
-    "flights": [
-      {
-        "uuid": "8e4db2f1-2315-4110-91b6-8f49d37b7288",
-        "date": "2024-12-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 1,
-        "landingDay": 1,
-        "landingDayFullStop": 1,
-        "dayVfr": 1.2,
-        "pilotInCommand": 1.2,
-        "tachTime": 1.2,
-        "wallTime": 1.2,
-        "timeOff": "09:00",
-        "timeIn": "10:12",
-        "tachOff": 456.7,
-        "tachIn": 457.9,
-        "from": "KJFK",
-        "to": "KLGA",
-        "route": [
-          "KJFK",
-          "KLGA"
-        ],
-        "remarks": "Training flight - pattern work",
-        "fuelUsed": 17.3,
-        "fuelCost": 118.33
-      }
-    ]
-  },
-  {
-    "uuid": "2025-09-07_03",
-    "flights": [
-      {
-        "uuid": "eebe843f-1739-4eb4-bda7-c1d1cf1feda4",
-        "date": "2024-12-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 1,
-        "landingDay": 1,
-        "landingDayFullStop": 1,
-        "dayVfr": 1.2,
-        "pilotInCommand": 1.2,
-        "tachTime": 1.2,
-        "wallTime": 1.2,
-        "timeOff": "09:00",
-        "timeIn": "10:12",
-        "tachOff": 456.7,
-        "tachIn": 457.9,
-        "from": "KJFK",
-        "to": "KLGA",
-        "route": [
-          "KJFK",
-          "KLGA"
-        ],
-        "remarks": "Training flight - pattern work",
-        "fuelUsed": 17.3,
-        "fuelCost": 118.33
-      }
-    ]
-  },
-  {
-    "uuid": "2024-12-20_01",
-    "flights": [
-      {
-        "uuid": "e5c7c129-9471-4974-8ba3-13617c1ada53",
-        "date": "2024-12-20",
-        "page": 1,
-        "category": "ASEL",
-        "takeoffsDay": 2,
-        "landingDay": 2,
-        "landingDayFullStop": 2,
-        "dayVfr": 0.8,
-        "pilotInCommand": 0.8,
-        "tachTime": 0.8,
-        "wallTime": 0.8,
-        "timeOff": "11:00",
-        "timeIn": "11:48",
-        "tachOff": 457.9,
-        "tachIn": 458.7,
-        "from": "KLGA",
-        "to": "KBOS",
-        "route": [
-          "KLGA",
-          "KBOS"
-        ],
-        "remarks": "Cross country to Boston",
-        "fuelUsed": 17.3,
-        "fuelCost": 118.33
-      }
-    ]
-  },
-  {
-    "uuid": "2025-08-03_01",
-    "flights": [
       {
         "uuid": "593",
         "date": "2025-08-03",
@@ -273,35 +30,19 @@
         "timeIn": "11:50:48",
         "from": "HWD",
         "to": "HWD",
-        "fuelUsed": 16.7,
-        "fuelCost": 114.23
+        "jpiFlightNumber": 593,
+        "jpiFilename": "jpi_U250901.JPI 2",
+        "fuelUsed": 10.69,
+        "fuelCost": 73.11,
+        "fuelInvoiceFilename": "fuel_Invoice_08032025.pdf"
       }
     ],
     "jplFlights": [
+      592,
       593
-    ]
-  },
-  {
-    "uuid": "2025-08-03_02",
-    "flights": [
-      {
-        "uuid": "593",
-        "date": "2025-08-03",
-        "page": 2,
-        "category": "ASEL",
-        "tachTime": 1.6,
-        "wallTime": 1.8,
-        "timeOff": "10:02:48",
-        "timeIn": "11:50:48",
-        "from": "HWD",
-        "to": "HWD",
-        "fuelUsed": 16.7,
-        "fuelCost": 114.23
-      }
     ],
-    "jplFlights": [
-      593
-    ]
+    "jpiFilename": "jpi_U250901.JPI 2",
+    "fuelInvoiceFilename": "fuel_Invoice_08032025.pdf"
   },
   {
     "uuid": "2025-08-08_01",

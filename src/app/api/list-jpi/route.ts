@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
       const to = toApt?.iata || toApt?.icao;
       return {
         id: s.id,
+        jpiFlightNumber: s.id,
+        jpiFilename: file.name,
         date,
         time,
         index: idx + 1,

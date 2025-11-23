@@ -218,6 +218,8 @@ export default function ViewTripPage({ params }: ViewTripPageProps) {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Cross Country</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Used</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Fuel Cost</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Remarks</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -225,6 +227,7 @@ export default function ViewTripPage({ params }: ViewTripPageProps) {
                 <React.Fragment key={flight.uuid || index}>
                 <tr className="hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{index + 1}</td>
+<<<<<<< HEAD
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
                     <EditableCell
                       value={flight.date}
@@ -386,9 +389,18 @@ export default function ViewTripPage({ params }: ViewTripPageProps) {
                       className="w-20"
                     />
                   </td>
+                  <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={flight.remarks}>{flight.remarks || '-'}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <Link
+                      href={`/view/${tripId}/${flight.uuid}`}
+                      className="text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      View
+                    </Link>
+                  </td>
                 </tr>
                 <tr className="bg-gray-50 hover:bg-gray-100">
-                  <td colSpan={17} className="px-4 py-2 text-sm text-gray-900">
+                  <td colSpan={19} className="px-4 py-2 text-sm text-gray-900">
                     <div className="flex items-start space-x-2">
                       <span className="text-gray-500 font-medium whitespace-nowrap">Remarks:</span>
                       <div className="flex-1">
